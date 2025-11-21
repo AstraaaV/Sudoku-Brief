@@ -8,6 +8,17 @@
 int main()
 {
     Grid grid; // the Sudoku grid
+
+    /*
+        Must use CORRECT ruleset with CORRECT puzzle .txt file
+        - Standard: easy1.txt
+        - Diagonal: diagonal1.txt
+
+        If diagonal is used with standard etc. it will print:
+        "No solution found."
+
+        Will use procedurally generated puzzles later on.
+    */
     DiagonalRules diagonal;
     Solver solver(&diagonal); // the actual Sudoku solver
 

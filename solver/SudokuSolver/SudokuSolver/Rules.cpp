@@ -1,15 +1,17 @@
 #include "Rules.h"
 
+// Checks entire row for number, if found -> invalid
 bool Rules::rowValid(const Grid& grid, int row, int value)
 {
     for (int col = 0; col < 9; col++)
     {
         if (grid.get(row, col) == value)
-            return false;
+            return false; // number already exists in this row
     }
     return true;
 }
 
+// Same logic as above but for columns
 bool Rules::colValid(const Grid& grid, int col, int value)
 {
     for (int row = 0; row < 9; row++)
@@ -20,6 +22,12 @@ bool Rules::colValid(const Grid& grid, int col, int value)
     return true;
 }
 
+/*
+* Checks which 3x3 box this cell belongs to then checks
+* every cell inside said box
+* 
+* The startRow / startCol is the top-left corner of the box
+*/
 bool Rules::boxValid(const Grid& grid, int row, int col, int value)
 {
     int startRow = row - (row % 3);
@@ -35,6 +43,13 @@ bool Rules::boxValid(const Grid& grid, int row, int col, int value)
     }
     return true;
 }
+
+/*
+* This is a full check aka a placement is only valid if:
+* - the row is fine
+* - the column is fine
+* - the 3x3 box is fine
+*/
 
 bool Rules::isValid(const Grid& grid, int row, int col, int value)
 {
