@@ -127,15 +127,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DiagonalRules.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Rules.cpp" />
     <ClCompile Include="Solver.cpp" />
     <ClCompile Include="SudokuSolver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DiagonalRules.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Rules.h" />
     <ClInclude Include="Solver.h" />
+    <ClInclude Include="StandardRules.h" />
+    <ClInclude Include="VariantRules.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

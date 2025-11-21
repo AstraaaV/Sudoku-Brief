@@ -33,6 +33,9 @@
     <ClCompile Include="Solver.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="DiagonalRules.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid.h">
@@ -42,6 +45,15 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Solver.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="VariantRules.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardRules.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DiagonalRules.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

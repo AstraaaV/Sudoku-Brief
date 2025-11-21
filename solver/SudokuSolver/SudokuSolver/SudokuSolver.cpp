@@ -1,15 +1,18 @@
 #include "Grid.h"
 #include "Solver.h"
 #include "Rules.h"
+#include "StandardRules.h"
+#include "DiagonalRules.h"
 #include <iostream>
 
 int main()
 {
     Grid grid; // the Sudoku grid
-    Solver solver; // the actual Sudoku solver
+    DiagonalRules diagonal;
+    Solver solver(&diagonal); // the actual Sudoku solver
 
     // Loads from the puzzle file
-    if (!grid.loadFromFile("puzzles/easy1.txt"))
+    if (!grid.loadFromFile("puzzles/diagonal1.txt"))
     {
         std::cout << "Failed to load puzzle file.\n";
         return 1;
@@ -20,7 +23,7 @@ int main()
     grid.print();
 
     // Checks if the rules functions correctly
-    std::cout << "\nTesting Rules...\n";
+    std::cout << "\nTesting the rules...\n";
     std::cout << Rules::isValid(grid, 0, 2, 1) << "\n";
 
     // For solving the puzzle

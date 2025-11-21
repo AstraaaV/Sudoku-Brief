@@ -12,7 +12,7 @@ bool Solver::solve(Grid& grid)
 
     for (int num = 1; num <= 9; num++)
     {
-        if (Rules::isValid(grid, row, col, num))
+        if (rules->isValid(grid, row, col, num))
         {
             grid.set(row, col, num);
 
