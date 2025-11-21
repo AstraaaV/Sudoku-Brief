@@ -1,0 +1,21 @@
+# Visual Studio
+*.obj
+*.pdb
+*.cache
+*.user
+*.suo
+*.vcxproj.user
+Debug/
+Release/
+
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+
+# Other
+.DS_Store
