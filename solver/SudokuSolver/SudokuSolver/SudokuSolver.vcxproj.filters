@@ -13,10 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{0b831d49-c906-4502-a77e-8da21db4847d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{a82de3c2-b82a-4b22-bb0a-13eba23b2d9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SudokuSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Rules.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Solver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Grid.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Rules.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Solver.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

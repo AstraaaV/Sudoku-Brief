@@ -1,20 +1,41 @@
-// SudokuSolver.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include "Grid.h"
+#include "Solver.h"
+#include "Rules.h"
 #include <iostream>
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    Grid grid; // the Sudoku grid
+    Solver solver; // the actual Sudoku solver
+
+    // Loads from the puzzle file
+    if (!grid.loadFromFile("puzzles/easy1.txt"))
+    {
+        std::cout << "Failed to load puzzle file.\n";
+        return 1;
+    }
+
+    // Shows the original puzzle
+    std::cout << "Starting puzzle:\n";
+    grid.print();
+
+    // Checks if the rules functions correctly
+    std::cout << "\nTesting Rules...\n";
+    std::cout << Rules::isValid(grid, 0, 2, 1) << "\n";
+
+    // For solving the puzzle
+    if (solver.solve(grid))
+    {
+        // If successful, it'll print this
+        std::cout << "\nSolved puzzle:\n";
+        grid.print();
+    }
+    else
+    {
+        // Otherwise, it'll print this
+        std::cout << "\nNo solution found.\n";
+    }
+
+    return 0;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

@@ -1,4 +1,5 @@
 # Visual Studio
+.vs/
 *.obj
 *.pdb
 *.cache
@@ -19,3 +20,4 @@ UserSettings/
 
 # Other
 .DS_Store
+Thumbs.db
