@@ -55,39 +55,69 @@ public class SudokuEditorWindow : EditorWindow
         cellStyle.alignment = TextAnchor.MiddleCenter;
         cellStyle.fontSize = 14;
 
-        for(int r = 0; r < 9; r++)
-        {
-            GUILayout.BeginHorizontal();
-            for(int c = 0; c < 9; c++)
-            {
-                GUI.backgroundColor = IsCellValid(r, c) ? Color.white : new Color(1f, 0.7f, 0.7f);
+        int cellSize = 25;
+        int thin = 1;
+        int thick = 3;
 
-                string input = GUILayout.TextField(
+        Rect gridRect = GUILayoutUtility.GetRect(
+            cellSize * 9,
+            cellSize * 9
+            );
+
+        // Draw background
+        EditorGUI.DrawRect(new Rect(gridRect.x, gridRect.y, gridRect.width, gridRect.height), Color.white);
+
+        // Draw grid lines
+        // Vertical lines
+        for (int x = 0; x <= 9; x++)
+        {
+            int thickness = (x % 3 == 0) ? thick : thin;
+            float xpos = gridRect.x + x * cellSize - (thickness * 0.5f);
+
+            EditorGUI.DrawRect(
+                new Rect(xpos, gridRect.y, thickness, cellSize * 9),
+                Color.black
+                );
+        }
+
+        // Horizontal lines
+        for (int y = 0; y <= 9; y++)
+        {
+            int thickness = (y % 3 == 0) ? thick : thin;
+            float ypos = gridRect.y + y * cellSize - (thickness * 0.5f);
+
+            EditorGUI.DrawRect(
+                new Rect(gridRect.x, ypos, cellSize * 9, thickness),
+                Color.black
+                );
+        }
+
+        // Now draw each cell on top
+        for (int r = 0; r < 9; r++)
+        {
+            for (int c = 0; c < 9; c++)
+            {
+                float x = gridRect.x + c * cellSize + 1;
+                float y = gridRect.y + r * cellSize + 1;
+
+                Rect cellRect = new Rect(x, y, cellSize - 2, cellSize - 2);
+
+                Color bg = GetCellColour(r, c);
+                EditorGUI.DrawRect(cellRect, bg);
+
+                string input = GUI.TextField(
+                    cellRect,
                     grid[r, c] == 0 ? "" : grid[r, c].ToString(),
-                    cellStyle,
-                    GUILayout.Width(25),
-                    GUILayout.Height(25)
+                    cellStyle
                     );
 
-                if(int.TryParse(input, out int value))
-                {
-                    grid[r, c] = Mathf.Clamp(value, 1, 9);
-                }
+                if (int.TryParse(input, out int val))
+                    grid[r, c] = Mathf.Clamp(val, 1, 9);
                 else
-                {
                     grid[r, c] = 0;
-                }
-
-                // Adds spacing between 3x3 boxes
-                if (c == 2 || c == 5)
-                    GUILayout.Space(5);
             }
-            GUILayout.EndHorizontal();
-
-            if (r == 2 || r == 5)
-                GUILayout.Space(5);
         }
-        GUI.backgroundColor = Color.white; // resets
+
     }
 
     private Color GetCellColour(int row, int col)
