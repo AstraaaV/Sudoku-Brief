@@ -14,6 +14,8 @@
 */
 bool Solver::solve(Grid& grid)
 {
+    steps++; // Count each recursive attempt
+
     int row, col;
 
     // If empty cell is not found then puzzle is solved

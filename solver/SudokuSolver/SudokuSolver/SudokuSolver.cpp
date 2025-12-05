@@ -43,6 +43,8 @@ int main()
         // If successful, it'll print this
         std::cout << "\nSolved puzzle:\n";
         grid.print();
+
+        std::cout << "\nSteps taken: " << solver.steps << "\n";
     }
     else
     {

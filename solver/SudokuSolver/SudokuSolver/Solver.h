@@ -16,6 +16,8 @@ public:
 	
 	// Recursive backtracking
 	bool solve(Grid& grid);
+
+	int steps = 0;
 private:
 	// Finds the next empty cell aka 0
 	bool findEmpty(const Grid& grid, int& row, int& col);

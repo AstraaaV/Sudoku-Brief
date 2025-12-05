@@ -12,6 +12,7 @@ bool DiagonalRules::isValid(const Grid& grid, int row, int col, int value) const
 		for (int i = 0; i < 9; i++)
 		{
 			// If same value already exists here -> nope
+			if (i == row) continue;
 			if (grid.get(i, i) == value) return false;
 		}
 	}
@@ -22,6 +23,7 @@ bool DiagonalRules::isValid(const Grid& grid, int row, int col, int value) const
 		for (int i = 0; i < 9; i++)
 		{
 			// Same logic as above, but mirrored
+			if (i == row) continue;
 			if (grid.get(i, 8 - i) == value) return false;
 		}
 	}
