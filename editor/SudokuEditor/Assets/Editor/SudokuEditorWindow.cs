@@ -1,11 +1,17 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Linq;
+using Codice.Client.Common.GameUI;
 public class SudokuEditorWindow : EditorWindow
 {
     private int[,] grid = new int[9, 9]; // Stores Sudoku numbers
-    private string[] ruleOptions = { "Standard", "Diagonal" };
+    private string[] ruleOptions = { "Standard", "Diagonal", "Anti-Knight"};
     private int chosenRule = 0;
+
+    private int steps = 0;
+    private int backtracks = 0;
+    private System.Diagnostics.Stopwatch stopwatch;
 
     [MenuItem("Tools/Sudoku Editor")]
     public static void ShowWindow()
@@ -32,6 +38,11 @@ public class SudokuEditorWindow : EditorWindow
         if(GUILayout.Button("Import Puzzle"))
         {
             ImportPuzzle();
+        }
+
+        if(GUILayout.Button("Generate Puzzle"))
+        {
+            GeneratePuzzle();
         }
 
         if(GUILayout.Button("Export Puzzle"))
@@ -245,6 +256,28 @@ public class SudokuEditorWindow : EditorWindow
                 }
             }
         }
+
+        // Anti-knight rules
+        if (chosenRule == 2)
+        {
+            int[,] knightMoves =
+            {
+                { 1, 2 }, { 1, -2 }, { -1, 2 }, { -1, -2 },
+                { 2, 1 }, { 2, -1 }, { -2, 1 }, { -2, -1 }
+            };
+
+            for (int i = 0; i < knightMoves.GetLength(0); i++)
+            {
+                int rr = row + knightMoves[i, 0];
+                int cc = col + knightMoves[i, 1];
+
+                if (rr >= 0 && rr < 9 && cc >= 0 && cc < 9)
+                {
+                    if (grid[rr, cc] == value)
+                        return false;
+                }
+            }
+        }
         return true;
     }
     private void ExportPuzzle()
@@ -270,18 +303,98 @@ public class SudokuEditorWindow : EditorWindow
         EditorUtility.DisplayDialog("Success!", "Puzzle exported succesfully.", "OK");
     }
 
+    private bool GenerateFullBoard()
+    {
+        // Clear grid first
+        for(int r = 0; r < 9; r++)
+        {
+            for(int c = 0; c < 9; c++)
+            {
+                grid[r, c] = 0;
+            }
+        }
+        return GenerateRecursive();
+    }
+
+    private bool GenerateRecursive()
+    {
+        int row = -1, col = -1;
+
+        if (!FindEmptyCell(ref row, ref col))
+            return true;
+
+        // Randomised order
+        System.Random random = new System.Random();
+        int[] nums = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        nums = nums.OrderBy(x => random.Next()).ToArray();
+
+        foreach (int num in nums)
+        {
+            grid[row, col] = num;
+
+            if(IsCellValid(row, col) && GenerateRecursive())
+                return true;
+
+            grid[row, col] = 0;
+        }
+        return false;
+    }
+
+    private void RemoveClues(int removals = 40)
+    {
+        System.Random rand = new System.Random();
+
+        int removed = 0;
+        while (removed < removals)
+        {
+            int r = rand.Next(0, 9);
+            int c = rand.Next(0, 9);
+
+            if (grid[r, c] != 0)
+            {
+                grid[r, c] = 0;
+                removed++;
+            }
+        }
+    }
+
+    private void GeneratePuzzle()
+    {
+        if (GenerateFullBoard())
+        {
+            RemoveClues(40);
+            EditorUtility.DisplayDialog("Generated!", "Puzzle generated!", "OK");
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("Error", "Generation failed.", "OK");
+        }
+    }
     private void SolvePuzzle()
     {
         int[,] backup = (int[,])grid.Clone();
 
+        steps = 0;
+        backtracks = 0;
+        stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
         if(SolveRecursive())
         {
-            EditorUtility.DisplayDialog("Solved", "Puzzle solved successfully.", "OK");
+            stopwatch.Stop();
+            EditorUtility.DisplayDialog("Solved",
+                $"Puzzle solved successfully.\n\n" + 
+                $"Steps Tried: {steps}\n" +
+                $"Backtracks: {backtracks}\n" +
+                $"Time: {stopwatch.ElapsedMilliseconds} ms",
+                "OK");
         }
         else
         {
+            stopwatch.Stop();
             grid = backup;
-            EditorUtility.DisplayDialog("Unsolvable", "No solution found under current rules.", "OK");
+            EditorUtility.DisplayDialog("Unsolvable",
+                "No solution found under current rules.",
+                "OK");
         }
     }
 
@@ -296,6 +409,8 @@ public class SudokuEditorWindow : EditorWindow
 
         for(int num = 1; num <= 9; num++)
         {
+            steps++; // metric
+
             grid[row, col] = num;
 
             if(IsCellValid(row, col) && SolveRecursive())
@@ -305,6 +420,7 @@ public class SudokuEditorWindow : EditorWindow
 
             // Backtrack
             grid[row, col] = 0;
+            backtracks++; // metric
         }
         return false;
     }
