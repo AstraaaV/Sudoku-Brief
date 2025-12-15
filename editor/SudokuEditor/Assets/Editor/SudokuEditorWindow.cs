@@ -3,22 +3,45 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 using Codice.Client.Common.GameUI;
+
+/*
+ * SudokuEditorWindow: custom unity editor tool for creating, importing,
+ * exporting, generating, and solving Sudoku puzzles.
+ *
+ * Includes:
+ * 1. Visual grid editor
+ * 2. Rule validator
+ * 3. Backtracking + performance metrics
+ * 4. Puzzle generation
+ *
+ * Supports:
+ * - Standard
+ * - Diagonal
+ * - Anti-Knight
+ */
 public class SudokuEditorWindow : EditorWindow
 {
+    // 9x9 Sudoku grid
     private int[,] grid = new int[9, 9]; // Stores Sudoku numbers
+    
+    // Supported rulesets
     private string[] ruleOptions = { "Standard", "Diagonal", "Anti-Knight"};
     private int chosenRule = 0;
 
+    // Performance metrics
     private int steps = 0;
     private int backtracks = 0;
     private System.Diagnostics.Stopwatch stopwatch;
 
+    // Adds custom menu item to Unity under:
+    // Tools -> Sudoku Editor
     [MenuItem("Tools/Sudoku Editor")]
     public static void ShowWindow()
     {
         GetWindow<SudokuEditorWindow>("Sudoku Editor");
     }
 
+    // Handles all drawing / interaction for Sudoku editor
     private void OnGUI()
     {
         GUILayout.Label("Sudoku Puzzle Editor", EditorStyles.boldLabel);
@@ -35,6 +58,11 @@ public class SudokuEditorWindow : EditorWindow
 
         GUILayout.BeginHorizontal();
 
+        // Core Editor actions:
+        // 1. Import puzzle from file
+        // 2. Generate new puzzle
+        // 3. Export puzzle to file
+        // 4. Solve puzzle using backtraacking
         if(GUILayout.Button("Import Puzzle"))
         {
             ImportPuzzle();
@@ -60,6 +88,7 @@ public class SudokuEditorWindow : EditorWindow
         GUILayout.Space(10);
     }
 
+    // Draws the 9x9 grid manually
     private void DrawGrid()
     {
         GUIStyle cellStyle = new GUIStyle();
@@ -80,6 +109,7 @@ public class SudokuEditorWindow : EditorWindow
 
         // Draw grid lines
         // Vertical lines
+        // 3x3 sub-grids creating using lines
         for (int x = 0; x <= 9; x++)
         {
             int thickness = (x % 3 == 0) ? thick : thin;
@@ -131,6 +161,7 @@ public class SudokuEditorWindow : EditorWindow
 
     }
 
+    // Returns background colour
     private Color GetCellColour(int row, int col)
     {
         Color color = Color.white;
@@ -162,6 +193,9 @@ public class SudokuEditorWindow : EditorWindow
         }
         return color;
     }
+
+    // Loads a sudoku puzzle from a .txt file
+    // Supports metadata aka diagonal, etc
     private void ImportPuzzle()
     {
         string path = EditorUtility.OpenFilePanel("Load Puzzle", "", "txt");
@@ -197,6 +231,13 @@ public class SudokuEditorWindow : EditorWindow
         EditorUtility.DisplayDialog("Loaded.", "Puzzle imported successfully.", "OK");
     }
 
+    // Validates whether number placement follows current ruleset
+    // Checks:
+    // 1. Row uniqueness
+    // 2. Column uniqueness
+    // 3. 3x3  sub-grid
+    // 4. Optional diagonal rules
+    // 5. Optional anti-knight rules
     private bool IsCellValid(int row, int col)
     {
         int value = grid[row, col];
@@ -280,6 +321,9 @@ public class SudokuEditorWindow : EditorWindow
         }
         return true;
     }
+
+    // Saves current puzzle to a .txt file
+    // Includes metadata
     private void ExportPuzzle()
     {
         string path = EditorUtility.SaveFilePanel("Save Puzzle", "", "puzzle.txt", "txt");
@@ -303,6 +347,7 @@ public class SudokuEditorWindow : EditorWindow
         EditorUtility.DisplayDialog("Success!", "Puzzle exported succesfully.", "OK");
     }
 
+    // Generates a fully valid Sudoku board using recursive backtrackng
     private bool GenerateFullBoard()
     {
         // Clear grid first
@@ -340,6 +385,7 @@ public class SudokuEditorWindow : EditorWindow
         return false;
     }
 
+    // Removes numbers from solved board
     private void RemoveClues(int removals = 40)
     {
         System.Random rand = new System.Random();
@@ -358,6 +404,10 @@ public class SudokuEditorWindow : EditorWindow
         }
     }
 
+    // Full generation pipeline:
+    // 1. Generate solved board
+    // 2. Remove clues aka numbers
+    // 3. Present playable puzzle
     private void GeneratePuzzle()
     {
         if (GenerateFullBoard())
@@ -370,6 +420,11 @@ public class SudokuEditorWindow : EditorWindow
             EditorUtility.DisplayDialog("Error", "Generation failed.", "OK");
         }
     }
+
+    // Tracks performance metrics such as:
+    // 1. Steps tried
+    // 2. Backtracks
+    // 3. Execution time
     private void SolvePuzzle()
     {
         int[,] backup = (int[,])grid.Clone();
@@ -398,6 +453,9 @@ public class SudokuEditorWindow : EditorWindow
         }
     }
 
+    // Recursive backtracking solver
+    // Tries 1-9 in empty cells
+    // Backtrakcs when rule violation occurs
     private bool SolveRecursive()
     {
         int row = -1, col = -1;
