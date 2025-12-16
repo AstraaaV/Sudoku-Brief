@@ -1,5 +1,6 @@
 #pragma once
 #include "Grid.h"
+#include "Rules.h"
 
 /*
 	This is the ruleset used for any Sudoku rule system
@@ -9,7 +10,7 @@
 	This is easier when adding new puzzles later on as
 	a new class can easily inherit from this class
 */
-class VariantRules
+class VariantRules : public Rules
 {
 public:
 	// Checks if a number is allowed here according to the selected ruleset

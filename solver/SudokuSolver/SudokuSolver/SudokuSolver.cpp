@@ -35,7 +35,7 @@ int main()
 
     // Checks if the rules functions correctly
     std::cout << "\nTesting the rules...\n";
-    std::cout << Rules::isValid(grid, 0, 2, 1) << "\n";
+    std::cout << diagonal.isValid(grid, 0, 2, 1) << "\n";
 
     // For solving the puzzle
     if (solver.solve(grid))

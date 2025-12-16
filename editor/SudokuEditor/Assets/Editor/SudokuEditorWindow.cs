@@ -41,10 +41,19 @@ public class SudokuEditorWindow : EditorWindow
     // 9x9 Sudoku grid
     private int[,] grid_9x9 = new int[9, 9]; // Stores Sudoku numbers
 
+    // Jigsaw region maps
+    private int[,] regionMap6 = new int[6, 6];
+    private int[,] regionMap9 = new int[9, 9];
+
+    private int[,] CurrentRegionMap =>
+        selectedGridSize == GridSize._6x6 ? regionMap6 : regionMap9;
+
+    private bool editRegions = false;
+
     private int[,] currentGrid => selectedGridSize == GridSize._9x9 ? grid_9x9 : grid_6x6;
 
     // Supported rulesets
-    private string[] ruleOptions = { "Standard", "Diagonal", "Anti-Knight"};
+    private string[] ruleOptions = { "Standard", "Diagonal", "Anti-Knight", "Jigsaw"};
     private int chosenRule = 0;
 
     // Performance metrics
@@ -84,6 +93,13 @@ public class SudokuEditorWindow : EditorWindow
         // Rule Selection
         GUILayout.Label("Select Puzzle Ruleset:");
         chosenRule = EditorGUILayout.Popup(chosenRule, ruleOptions);
+
+        if(chosenRule == 3)
+        {
+            GUILayout.Space(5);
+            editRegions = GUILayout.Toggle(editRegions, "Edit Jigsaw Regions");
+            GUILayout.Label("Click cells to cycle region ID.");
+        }
 
         DrawGrid(); // Draws dynamic grid
 
@@ -185,6 +201,20 @@ public class SudokuEditorWindow : EditorWindow
                     cellStyle
                     );
 
+                if(chosenRule == 3 && editRegions)
+                {
+                    if(Event.current.type == EventType.MouseDown &&
+                        cellRect.Contains(Event.current.mousePosition))
+                    {
+                        int regionCount = N;
+                        CurrentRegionMap[r, c] =
+                            (CurrentRegionMap[r, c] + 1) % regionCount;
+
+                        Event.current.Use();
+                        Repaint();
+                    }
+                }
+
                 if (int.TryParse(input, out int val))
                     currentGrid[r, c] = Mathf.Clamp(val, 1, selectedGridSize == GridSize._6x6 ? 6 : 9);
                 else
@@ -198,6 +228,13 @@ public class SudokuEditorWindow : EditorWindow
     private Color GetCellColour(int row, int col)
     {
         Color color = Color.white;
+
+        if (chosenRule == 3)
+        {
+            int id = CurrentRegionMap[row, col];
+            float hue = (id % N) / (float)N;
+            return Color.HSVToRGB(hue, 0.25f, 1f);
+        }
 
         // Light hightlight for diagonal
         if(chosenRule == 1) // diagonal
@@ -290,24 +327,14 @@ public class SudokuEditorWindow : EditorWindow
                 return false;
         }
 
-        // Checks 3x3 box
-        int startR = row - (row % BoxH);
-        int startC = col - (col % BoxW);
-
-        for(int r = 0; r < BoxH; r++)
+        // Jigsaw
+        if (chosenRule == 3 && Event.current.type == EventType.Layout)
         {
-            for (int c = 0; c < BoxW; c++)
-            {
-                int rr = startR + r;
-                int cc = startC + c;
-
-                if ((rr != row || cc != col) && currentGrid[rr, cc] == value)
-                    return false;
-            }
+            InitialiseDefaultRegions();
         }
 
         // Diagonal rules
-        if(chosenRule == 1)
+        if (chosenRule == 1)
         {
             // Main diagonal (top-left to bottom-right)
             if(row == col)
@@ -352,6 +379,7 @@ public class SudokuEditorWindow : EditorWindow
                 }
             }
         }
+
         return true;
     }
 
@@ -442,6 +470,15 @@ public class SudokuEditorWindow : EditorWindow
     // 3. Present playable puzzle
     private void GeneratePuzzle()
     {
+        if(chosenRule == 3 && !AreRegionsValid())
+        {
+            EditorUtility.DisplayDialog(
+                "Invalid Jigsaw",
+                "Each region must contain exactly " + N + " cells.",
+                "OK");
+            return;
+        }
+
         if (GenerateFullBoard())
         {
             RemoveClues((gridWidth * gridHeight) / 2);
@@ -529,5 +566,32 @@ public class SudokuEditorWindow : EditorWindow
             }
         }
         return false;
+    }
+
+    private void InitialiseDefaultRegions()
+    {
+        int region = 0;
+        int cellsPerRegion = N;
+
+        for (int r = 0; r < gridHeight; r++)
+        {
+            for(int c = 0;c < gridWidth; c++)
+            {
+                CurrentRegionMap[r, c] = region;
+                if((r * gridWidth + c + 1) % cellsPerRegion == 0)
+                    region++;
+            }
+        }
+    }
+
+    private bool AreRegionsValid()
+    {
+        int[] counts = new int[N];
+
+        for (int r = 0; r < gridHeight; r++)
+            for (int c = 0; c < gridWidth; c++)
+                counts[CurrentRegionMap[r, c]]++;
+
+        return counts.All(c => c == N);
     }
 }

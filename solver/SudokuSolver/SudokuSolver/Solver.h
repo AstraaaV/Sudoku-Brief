@@ -1,6 +1,7 @@
 #pragma once
 #include "Grid.h"
 #include "VariantRules.h"
+#include "Rules.h"
 
 /*
 	This basically uses the rule system I state, e.g. StandardRules
