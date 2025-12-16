@@ -324,7 +324,7 @@ public class SudokuEditorWindow : EditorWindow
             {
                 for(int i = 0; i < N; i++)
                 {
-                    int aa = 8 - i;
+                    int aa = (N - 1) - i;
                     if(i != row &&currentGrid[i, aa] == value)
                         return false;
                 }
@@ -404,7 +404,6 @@ public class SudokuEditorWindow : EditorWindow
         // Randomised order
         System.Random random = new System.Random();
         int[] nums = Enumerable.Range(1, MaxValue).OrderBy(x => random.Next()).ToArray();
-        nums = nums.OrderBy(x => random.Next()).ToArray();
 
         foreach (int num in nums)
         {
@@ -445,7 +444,7 @@ public class SudokuEditorWindow : EditorWindow
     {
         if (GenerateFullBoard())
         {
-            RemoveClues(40);
+            RemoveClues((gridWidth * gridHeight) / 2);
             EditorUtility.DisplayDialog("Generated!", "Puzzle generated!", "OK");
         }
         else
