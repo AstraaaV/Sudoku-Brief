@@ -21,9 +21,28 @@ using Codice.Client.Common.GameUI;
  */
 public class SudokuEditorWindow : EditorWindow
 {
+    // Grid size options
+    private enum GridSize { _6x6, _9x9 }
+    private GridSize selectedGridSize = GridSize._9x9;
+
+    // 6x6 or 9x9 grid
+    private int gridWidth = 9;
+    private int gridHeight = 9;
+
+    private int N => gridWidth;
+    private int MaxValue => gridWidth;
+
+    private int BoxH => (selectedGridSize == GridSize._6x6) ? 2 : 3;
+    private int BoxW => (selectedGridSize == GridSize._6x6) ? 3 : 3;
+
+    // 6x6 Sudoku grid
+    private int[,] grid_6x6 = new int[6, 6];
+
     // 9x9 Sudoku grid
-    private int[,] grid = new int[9, 9]; // Stores Sudoku numbers
-    
+    private int[,] grid_9x9 = new int[9, 9]; // Stores Sudoku numbers
+
+    private int[,] currentGrid => selectedGridSize == GridSize._9x9 ? grid_9x9 : grid_6x6;
+
     // Supported rulesets
     private string[] ruleOptions = { "Standard", "Diagonal", "Anti-Knight"};
     private int chosenRule = 0;
@@ -46,13 +65,27 @@ public class SudokuEditorWindow : EditorWindow
     {
         GUILayout.Label("Sudoku Puzzle Editor", EditorStyles.boldLabel);
 
+        GUILayout.Label("Select Grid Size:");
+        selectedGridSize = (GridSize)EditorGUILayout.EnumPopup(selectedGridSize);
+
+        if(selectedGridSize == GridSize._6x6)
+        {
+            gridWidth = 6;
+            gridHeight = 6;
+        }
+        else
+        {
+            gridWidth = 9;
+            gridHeight = 9;
+        }
+
+        GUILayout.Space(10);
+
         // Rule Selection
         GUILayout.Label("Select Puzzle Ruleset:");
         chosenRule = EditorGUILayout.Popup(chosenRule, ruleOptions);
 
-        GUILayout.Space(10);
-
-        DrawGrid(); // Draws 9x9 grid
+        DrawGrid(); // Draws dynamic grid
 
         GUILayout.Space(15);
 
@@ -88,7 +121,7 @@ public class SudokuEditorWindow : EditorWindow
         GUILayout.Space(10);
     }
 
-    // Draws the 9x9 grid manually
+    // Draws the grid manually
     private void DrawGrid()
     {
         GUIStyle cellStyle = new GUIStyle();
@@ -100,8 +133,8 @@ public class SudokuEditorWindow : EditorWindow
         int thick = 3;
 
         Rect gridRect = GUILayoutUtility.GetRect(
-            cellSize * 9,
-            cellSize * 9
+            cellSize * gridWidth,
+            cellSize * gridHeight
             );
 
         // Draw background
@@ -110,33 +143,33 @@ public class SudokuEditorWindow : EditorWindow
         // Draw grid lines
         // Vertical lines
         // 3x3 sub-grids creating using lines
-        for (int x = 0; x <= 9; x++)
+        for (int x = 0; x <= gridWidth; x++)
         {
-            int thickness = (x % 3 == 0) ? thick : thin;
+            int thickness = (x % (selectedGridSize == GridSize._9x9 ? 3 : 2) == 0) ? thick : thin;
             float xpos = gridRect.x + x * cellSize - (thickness * 0.5f);
 
             EditorGUI.DrawRect(
-                new Rect(xpos, gridRect.y, thickness, cellSize * 9),
+                new Rect(xpos, gridRect.y, thickness, cellSize * gridHeight),
                 Color.black
                 );
         }
 
         // Horizontal lines
-        for (int y = 0; y <= 9; y++)
+        for (int y = 0; y <= gridHeight; y++)
         {
-            int thickness = (y % 3 == 0) ? thick : thin;
+            int thickness = (y % (selectedGridSize == GridSize._9x9 ? 3 : 2) == 0) ? thick : thin;
             float ypos = gridRect.y + y * cellSize - (thickness * 0.5f);
 
             EditorGUI.DrawRect(
-                new Rect(gridRect.x, ypos, cellSize * 9, thickness),
+                new Rect(gridRect.x, ypos, cellSize * gridWidth, thickness),
                 Color.black
                 );
         }
 
         // Now draw each cell on top
-        for (int r = 0; r < 9; r++)
+        for (int r = 0; r < gridHeight; r++)
         {
-            for (int c = 0; c < 9; c++)
+            for (int c = 0; c < gridWidth; c++)
             {
                 float x = gridRect.x + c * cellSize + 1;
                 float y = gridRect.y + r * cellSize + 1;
@@ -148,14 +181,14 @@ public class SudokuEditorWindow : EditorWindow
 
                 string input = GUI.TextField(
                     cellRect,
-                    grid[r, c] == 0 ? "" : grid[r, c].ToString(),
+                    currentGrid[r, c] == 0 ? "" : currentGrid[r, c].ToString(),
                     cellStyle
                     );
 
                 if (int.TryParse(input, out int val))
-                    grid[r, c] = Mathf.Clamp(val, 1, 9);
+                    currentGrid[r, c] = Mathf.Clamp(val, 1, selectedGridSize == GridSize._6x6 ? 6 : 9);
                 else
-                    grid[r, c] = 0;
+                    currentGrid[r, c] = 0;
             }
         }
 
@@ -170,7 +203,7 @@ public class SudokuEditorWindow : EditorWindow
         if(chosenRule == 1) // diagonal
         {
             bool onMain = (row == col);
-            bool onAnti = (row + col == 8);
+            bool onAnti = (row + col == (selectedGridSize == GridSize._9x9 ? 8 : 5));
 
             if(onMain && onAnti)
             {
@@ -217,14 +250,14 @@ public class SudokuEditorWindow : EditorWindow
             }
         }
 
-        for (int r = 0; r < 9; r++)
+        for (int r = 0; r < gridHeight; r++)
         {
             if (r >= lines.Length) break;
 
             string[] items = lines[r].Split(' ', '\t');
-            for (int c = 0; c < 9 && c < items.Length; c++)
+            for (int c = 0; c < gridWidth && c < items.Length; c++)
             {
-                grid[r, c] = items[c] == "." ? 0 : int.Parse(items[c]);
+                currentGrid[r, c] = items[c] == "." ? 0 : int.Parse(items[c]);
             }
         }
 
@@ -240,35 +273,35 @@ public class SudokuEditorWindow : EditorWindow
     // 5. Optional anti-knight rules
     private bool IsCellValid(int row, int col)
     {
-        int value = grid[row, col];
+        int value = currentGrid[row, col];
         if (value == 0) return true;
 
         // Checks row
-        for(int c = 0; c < 9; c++)
+        for(int c = 0; c < gridWidth; c++)
         {
-            if (c != col && grid[row, c] == value)
+            if (c != col && currentGrid[row, c] == value)
                 return false;
         }
 
         // Checks column
-        for(int r = 0; r < 9; r++)
+        for(int r = 0; r < gridHeight; r++)
         {
-            if(r != row && grid[r, col] == value)
+            if(r != row && currentGrid[r, col] == value)
                 return false;
         }
 
         // Checks 3x3 box
-        int startR = row - (row % 3);
-        int startC = col - (col % 3);
+        int startR = row - (row % BoxH);
+        int startC = col - (col % BoxW);
 
-        for(int r = 0; r < 3; r++)
+        for(int r = 0; r < BoxH; r++)
         {
-            for (int c = 0; c < 3; c++)
+            for (int c = 0; c < BoxW; c++)
             {
                 int rr = startR + r;
                 int cc = startC + c;
 
-                if ((rr != row || cc != col) && grid[rr, cc] == value)
+                if ((rr != row || cc != col) && currentGrid[rr, cc] == value)
                     return false;
             }
         }
@@ -279,20 +312,20 @@ public class SudokuEditorWindow : EditorWindow
             // Main diagonal (top-left to bottom-right)
             if(row == col)
             {
-                for(int i = 0; i < 9; i++)
+                for(int i = 0; i < N; i++)
                 {
-                    if(i != row && grid[i, i] == value)
+                    if(i != row && currentGrid[i, i] == value)
                         return false;
                 }
             }
 
             // Anti-Diagonal (top-right to bottom-left)
-            if(row + col == 8)
+            if(row + col == (N - 1))
             {
-                for(int i = 0; i < 9; i++)
+                for(int i = 0; i < N; i++)
                 {
                     int aa = 8 - i;
-                    if(i != row && grid[i, aa] == value)
+                    if(i != row &&currentGrid[i, aa] == value)
                         return false;
                 }
             }
@@ -312,9 +345,9 @@ public class SudokuEditorWindow : EditorWindow
                 int rr = row + knightMoves[i, 0];
                 int cc = col + knightMoves[i, 1];
 
-                if (rr >= 0 && rr < 9 && cc >= 0 && cc < 9)
+                if (rr >= 0 && rr < gridHeight && cc >= 0 && cc < gridWidth)
                 {
-                    if (grid[rr, cc] == value)
+                    if (currentGrid[rr, cc] == value)
                         return false;
                 }
             }
@@ -332,11 +365,11 @@ public class SudokuEditorWindow : EditorWindow
 
         using (StreamWriter writer = new StreamWriter(path))
         {
-            for(int r = 0; r < 9; r++)
+            for(int r = 0; r < gridHeight; r++)
             {
-                for(int c = 0; c < 9; c++)
+                for(int c = 0; c < gridWidth; c++)
                 {
-                    writer.Write(grid[r, c] == 0 ? "." : grid[r, c].ToString());
+                    writer.Write(currentGrid[r, c] == 0 ? "." : currentGrid[r, c].ToString());
                     writer.Write(" ");
                 }
                 writer.WriteLine();
@@ -351,11 +384,11 @@ public class SudokuEditorWindow : EditorWindow
     private bool GenerateFullBoard()
     {
         // Clear grid first
-        for(int r = 0; r < 9; r++)
+        for(int r = 0; r < gridHeight; r++)
         {
-            for(int c = 0; c < 9; c++)
+            for(int c = 0; c < gridWidth; c++)
             {
-                grid[r, c] = 0;
+                currentGrid[r, c] = 0;
             }
         }
         return GenerateRecursive();
@@ -370,17 +403,17 @@ public class SudokuEditorWindow : EditorWindow
 
         // Randomised order
         System.Random random = new System.Random();
-        int[] nums = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        int[] nums = Enumerable.Range(1, MaxValue).OrderBy(x => random.Next()).ToArray();
         nums = nums.OrderBy(x => random.Next()).ToArray();
 
         foreach (int num in nums)
         {
-            grid[row, col] = num;
+            currentGrid[row, col] = num;
 
             if(IsCellValid(row, col) && GenerateRecursive())
                 return true;
 
-            grid[row, col] = 0;
+            currentGrid[row, col] = 0;
         }
         return false;
     }
@@ -393,12 +426,12 @@ public class SudokuEditorWindow : EditorWindow
         int removed = 0;
         while (removed < removals)
         {
-            int r = rand.Next(0, 9);
-            int c = rand.Next(0, 9);
+            int r = rand.Next(0, gridHeight);
+            int c = rand.Next(0, gridWidth);
 
-            if (grid[r, c] != 0)
+            if (currentGrid[r, c] != 0)
             {
-                grid[r, c] = 0;
+                currentGrid[r, c] = 0;
                 removed++;
             }
         }
@@ -427,7 +460,7 @@ public class SudokuEditorWindow : EditorWindow
     // 3. Execution time
     private void SolvePuzzle()
     {
-        int[,] backup = (int[,])grid.Clone();
+        int[,] backup = (int[,])currentGrid.Clone();
 
         steps = 0;
         backtracks = 0;
@@ -446,7 +479,6 @@ public class SudokuEditorWindow : EditorWindow
         else
         {
             stopwatch.Stop();
-            grid = backup;
             EditorUtility.DisplayDialog("Unsolvable",
                 "No solution found under current rules.",
                 "OK");
@@ -465,11 +497,11 @@ public class SudokuEditorWindow : EditorWindow
             return true;
         }
 
-        for(int num = 1; num <= 9; num++)
+        for(int num = 1; num <= MaxValue; num++)
         {
             steps++; // metric
 
-            grid[row, col] = num;
+            currentGrid[row, col] = num;
 
             if(IsCellValid(row, col) && SolveRecursive())
             {
@@ -477,7 +509,7 @@ public class SudokuEditorWindow : EditorWindow
             }
 
             // Backtrack
-            grid[row, col] = 0;
+            currentGrid[row, col] = 0;
             backtracks++; // metric
         }
         return false;
@@ -485,11 +517,11 @@ public class SudokuEditorWindow : EditorWindow
 
     private bool FindEmptyCell(ref int row, ref int col)
     {
-        for(int r = 0; r < 9; r++)
+        for(int r = 0; r < gridHeight; r++)
         {
-            for(int c = 0; c < 9; c++)
+            for(int c = 0; c < gridWidth; c++)
             {
-                if (grid[r, c] == 0)
+                if (currentGrid[r, c] == 0)
                 {
                     row = r;
                     col = c;
