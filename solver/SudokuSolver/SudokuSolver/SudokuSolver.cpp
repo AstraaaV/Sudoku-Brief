@@ -19,11 +19,11 @@ int main()
 
         Will use procedurally generated puzzles later on.
     */
-    DiagonalRules diagonal;
-    Solver solver(&diagonal); // the actual Sudoku solver
+    StandardRules standard;
+    Solver solver(&standard); // the actual Sudoku solver
 
     // Loads from the puzzle file
-    if (!grid.loadFromFile("puzzles/diagonal1.txt"))
+    if (!grid.loadFromFile("puzzles/easy1.txt"))
     {
         std::cout << "Failed to load puzzle file.\n";
         return 1;
@@ -35,7 +35,7 @@ int main()
 
     // Checks if the rules functions correctly
     std::cout << "\nTesting the rules...\n";
-    std::cout << diagonal.isValid(grid, 0, 2, 1) << "\n";
+    std::cout << Rules::isValid(grid, 0, 2, 1) << "\n";
 
     // For solving the puzzle
     if (solver.solve(grid))
